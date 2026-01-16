@@ -70,6 +70,7 @@ show (const icmp_pt *pt, uint16 size)
     {
         printf ("%02x", *pc++);
     }
+
     printf ("\n");
 }
 
