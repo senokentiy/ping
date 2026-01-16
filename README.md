@@ -1,5 +1,5 @@
 # description
-[ping](https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol)
+just ping
 
 # build
 ```
