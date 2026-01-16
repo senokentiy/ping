@@ -132,7 +132,7 @@ mkip (uint16 id, uint8 ttl, uint8 protocol, uint32 src, uint32 dst,
     assert (pt);
 
     pt->vers = 4;
-    pt->ihl = sizeof (ipv4_pt);
+    pt->ihl = sizeof (ipv4_pt) / 4;
     pt->dscp = 0;
     pt->ecn = 0;
     pt->totlen = size;
