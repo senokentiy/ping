@@ -1,10 +1,12 @@
 
 #include "ping.h"
+#include <arpa/inet.h>
+#include <stdlib.h>
 
 
 // https://en.wikipedia.org/wiki/Internet_checksum
 uint16
-checksum (const icmp_pt *pt, uint16 size)
+checksum (const void *pt, uint16 size)
 {
     uint16 *pc = NULL;
     uint16 n, sum, carry = 0;
@@ -35,7 +37,7 @@ checksum (const icmp_pt *pt, uint16 size)
 
 
 void
-copy (uint8 *dst, const uint8 *src, uint16 size)
+copy (void *dst, const void *src, uint16 size)
 {
     uint8 *sc = NULL;
     uint8 *dc = NULL;
@@ -55,7 +57,7 @@ copy (uint8 *dst, const uint8 *src, uint16 size)
 
 
 void
-show (const icmp_pt *pt, uint16 size)
+show (const void *pt, uint16 size)
 {
     uint8 *pc = NULL;
     uint16 n;
@@ -76,7 +78,7 @@ show (const icmp_pt *pt, uint16 size)
 
 
 icmp_pt *
-mkicmp (uint8 type, uint8 code, const uint8 *data, uint16 dsize)
+mkicmp (uint8 type, uint8 code, const void *data, uint16 dsize)
 {
     icmp_pt *pt = NULL;
     uint16 psize;
@@ -98,7 +100,56 @@ mkicmp (uint8 type, uint8 code, const uint8 *data, uint16 dsize)
 
     if (!pt->checksum)
     {
-        fprintf (stderr, "[x] checksum error: bad checksum.\n");
+        fprintf (stderr, "[x] icmp checksum error: bad checksum.\n");
+        return NULL;
+    }
+
+    return pt;
+}
+
+
+ipv4_pt *
+mkip (uint16 id, uint8 ttl, uint8 protocol, uint32 src, uint32 dst,
+      void *payload, uint16 pdsize)
+{
+    ipv4_pt *pt = NULL;
+    uint16 size;
+
+    if (!src || !dst)
+    {
+        fprintf (stderr, "[x] ip error: empty addr.\n");
+        return NULL;
+    }
+
+    if (!payload)
+    {
+        fprintf (stderr, "[x] ip error: empty payload.\n");
+        return NULL;
+    }
+
+    size = sizeof (ipv4_pt) + pdsize;
+    pt = malloc (size);
+    assert (pt);
+
+    pt->vers = 4;
+    pt->ihl = sizeof (ipv4_pt);
+    pt->dscp = 0;
+    pt->ecn = 0;
+    pt->totlen = size;
+    pt->id = id;
+    pt->flags = 0;
+    pt->offset = 0;
+    pt->ttl = ttl;
+    pt->protocol = protocol;
+    pt->checksum = 0;             // later
+    pt->src = src;
+    pt->dst = dst;
+    copy (pt->payload, payload, pdsize);
+    pt->checksum = checksum (pt, size);
+
+    if (!pt->checksum)
+    {
+        fprintf (stderr, "[x] ip checksum error: bad checksum.\n");
         return NULL;
     }
 
@@ -112,13 +163,22 @@ main (void)
     const uint8 *msg = (uint8 *)"ohme god damn";
     uint16 msize = strlen ((char *)msg);
 
-    icmp_pt *packet = mkicmp (ECHO, CODE, msg, msize);
-    assert (packet);
-    uint16 psize = sizeof (icmp_pt) + msize;
+    icmp_pt *icmp = mkicmp (ECHO, CODE, msg, msize);
+    uint16 icmpsize = sizeof (icmp_pt) + msize;
+    assert (icmp);
 
-    show (packet, psize);
+    uint32 dst = inet_addr ("192.168.0.1");
+    uint32 src = inet_addr ("192.168.0.1");
 
-    free (packet);
+    ipv4_pt *ip = mkip (0, 250, ICMP, src, dst, icmp, icmpsize);
+    uint16 ipsize = sizeof (ipv4_pt) + icmpsize;
+    assert (ip);
+
+    show (icmp, icmpsize);
+    show (ip, ipsize);
+
+    free (icmp);
+    free (ip);
     return EXIT_SUCCESS;
 }
 
