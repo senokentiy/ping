@@ -24,12 +24,12 @@ typedef struct
     uint8 type;
     uint8 code;
     uint16 checksum;
-    uint8 data[1];
+    uint8 data[];
 } packed icmp_pt;
 
 
 icmp_pt *mkicmp (uint8, uint8, const uint8 *, uint16);
 uint16 checksum (const icmp_pt *, uint16);
 void copy (uint8 *, const uint8 *, uint16);
-void show (const void *, uint16);
+void show (const icmp_pt *, uint16);
 

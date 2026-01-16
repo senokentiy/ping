@@ -55,7 +55,7 @@ copy (uint8 *dst, const uint8 *src, uint16 size)
 
 
 void
-show (const void *pt, uint16 size)
+show (const icmp_pt *pt, uint16 size)
 {
     uint8 *pc = NULL;
     uint16 n;
