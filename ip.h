@@ -1,10 +1,10 @@
 #pragma once
 
+#include "icmp.h"
 #include "ping.h"
 #include "util.h"
-#include <errno.h>
 #include <netinet/in.h>
-#include <sys/socket.h>
+#include <stdlib.h>
 
 #undef RAND_MAX
 #define RAND_MAX 65536
@@ -46,7 +46,8 @@ setsocket (uint32 domain, uint32 type, uint32 protocol)
         return ERROR;
     }
 
-    if (setsockopt (sock, SOL_IP, IP_HDRINCL, (int *)1, sizeof (uint32)) == -1)
+    int opt = 1;
+    if (setsockopt (sock, IPPROTO_IP, IP_HDRINCL, &opt, sizeof (opt)) == -1)
     {
         fprintf (stderr, "[x] setsocket error: %d\n", errno);
         return ERROR;
@@ -57,7 +58,21 @@ setsocket (uint32 domain, uint32 type, uint32 protocol)
 
 
 int
-sendip (uint32 sock, ipv4_pt *pt)
+setip (struct sockaddr_in *dest, const char *dst)
+{
+    dest->sin_family = AF_INET;
+
+    if (inet_pton (AF_INET, dst, &dest->sin_addr) <= 0)
+    {
+        fprintf (stderr, "[x] setip error: %d.", errno);
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}
+
+
+int
+sendip (uint32 sock, ipv4_pt *pt, const struct sockaddr_in *dst)
 {
     int bytes;
 
@@ -67,7 +82,9 @@ sendip (uint32 sock, ipv4_pt *pt)
         return 0;
     }
 
-    if ((bytes = sendto (sock, pt, pt->totlen, MSG_DONTWAIT, 0, 0)) == -1)
+    if ((bytes = sendto (sock, pt, pt->totlen, MSG_DONTWAIT,
+                         (struct sockaddr *)dst, sizeof (*dst)))
+        == -1)
     {
         fprintf (stderr, "[x] sendip error: %d.\n", errno);
         return 0;
@@ -110,7 +127,7 @@ mkip (uint16 id, uint8 ttl, uint8 protocol, uint32 src, uint32 dst,
     pt->offset = 0;
     pt->ttl = ttl;
     pt->protocol = protocol;
-    pt->checksum = 0;             // later
+    pt->checksum = 0; // later
     pt->src = src;
     pt->dst = dst;
     copy (pt->payload, payload, pdsize);

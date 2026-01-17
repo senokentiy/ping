@@ -1,8 +1,8 @@
 
 #include "icmp.h"
 #include "ip.h"
+#include "ping.h"
 #include "util.h"
-#include <stdlib.h>
 
 
 int
@@ -17,29 +17,40 @@ main (void)
     uint16 icmpsize = sizeof (icmp_pt) + msize;
     assert (icmp);
 
-    uint32 src = inet_addr ("192.168.31.110");
-    uint32 dst = inet_addr ("192.168.31.110");
+    char *src = "192.168.31.110";
+    char *dst = "192.168.31.129";
 
-    ipv4_pt *ip = mkip (ID, TTL, ICMP, src, dst, icmp, icmpsize);
+    ipv4_pt *ip = mkip (ID, TTL, ICMP, inet_addr (src), inet_addr (dst), icmp,
+                        icmpsize);
     uint16 ipsize = sizeof (ipv4_pt) + icmpsize;
     assert (ip);
 
     show (icmp, icmpsize);
     show (ip, ipsize);
 
-    int sock = setsocket (AF_INET, SOCK_RAW, ICMP);
-    if (sock == -1)
+    int sock = setsocket (AF_INET, SOCK_RAW, IPPROTO_ICMP);
+    if (sock == ERROR)
     {
         return EXIT_FAILURE;
     }
 
-    if (!sendip (sock, ip))
+    struct sockaddr_in dest;
+    if (setip (&dest, dst))
     {
         return EXIT_FAILURE;
     }
+
+    if (!sendip (sock, ip, &dest))
+    {
+        return EXIT_FAILURE;
+    }
+
+    printf ("packet sent to %s.\n", dst);
 
     free (icmp);
     free (ip);
+    close (sock);
+
     return EXIT_SUCCESS;
 }
 
