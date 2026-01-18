@@ -8,23 +8,22 @@
 #define RAND_MAX 65536
 #define ERROR -1
 
-#define ID rand () % RAND_MAX
 #define ICMP 1
 #define TTL 250
 
 
 // https://en.wikipedia.org/wiki/IPv4#Packet_structure
-#pragma scalar_storage_order big - endian
+// #pragma scalar_storage_order big - endian
 typedef struct
 {
-    uint8 vers : 4;
     uint8 ihl : 4;
-    uint8 dscp : 6;
+    uint8 vers : 4;
     uint8 ecn : 2;
+    uint8 dscp : 6;
     uint16 totlen;
     uint16 id;
-    uint16 flags : 3;
     uint16 offset : 13;
+    uint16 flags : 3;
     uint8 ttl;
     uint8 protocol;
     uint16 checksum;
@@ -94,8 +93,8 @@ sendip (uint32 sock, ipv4_pt *pt, const struct sockaddr_in *dst)
 
 
 ipv4_pt *
-mkip (uint16 id, uint8 ttl, uint8 protocol, uint32 src, uint32 dst,
-      void *payload, uint16 pdsize)
+mkip (uint8 ttl, uint8 protocol, uint32 src, uint32 dst, void *payload,
+      uint16 pdsize)
 {
     ipv4_pt *pt = NULL;
     uint16 size;
@@ -121,12 +120,12 @@ mkip (uint16 id, uint8 ttl, uint8 protocol, uint32 src, uint32 dst,
     pt->dscp = 0;
     pt->ecn = 0;
     pt->totlen = size;
-    pt->id = id;
+    pt->id = rand () % RAND_MAX;
     pt->flags = 0;
     pt->offset = 0;
     pt->ttl = ttl;
     pt->protocol = protocol;
-    pt->checksum = 0; // later
+    pt->checksum = 0;               // later
     pt->src = src;
     pt->dst = dst;
     copy (pt->payload, payload, pdsize);

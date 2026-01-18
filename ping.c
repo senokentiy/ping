@@ -9,7 +9,7 @@
 int
 main (void)
 {
-    srand (time (0));
+    srand (getpid ());
 
     const uint8 *msg = (uint8 *)"ohme god damn";
     uint16 msize = strlen ((char *)msg);
@@ -19,10 +19,10 @@ main (void)
     assert (icmp);
 
     char *src = "192.168.31.110";
-    char *dst = "192.168.31.129";
+    char *dst = "192.168.31.186";
 
-    ipv4_pt *ip = mkip (ID, TTL, ICMP, inet_addr (src), inet_addr (dst), icmp,
-                        icmpsize);
+    ipv4_pt *ip
+        = mkip (TTL, ICMP, inet_addr (src), inet_addr (dst), icmp, icmpsize);
     uint16 ipsize = sizeof (ipv4_pt) + icmpsize;
     assert (ip);
 
