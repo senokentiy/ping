@@ -1,5 +1,5 @@
 # description
-just ping
+just ping on raw sockets
 
 # build
 ```
@@ -7,5 +7,5 @@ make
 ```
 # usage
 ```
-./ping DEST
+./ping ADDRESS
 ```
