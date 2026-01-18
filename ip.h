@@ -62,7 +62,7 @@ setip (struct sockaddr_in *dest, const char *dst)
 
     if (inet_pton (AF_INET, dst, &dest->sin_addr) <= 0)
     {
-        fprintf (stderr, "[x] setip error: %d.", errno);
+        fprintf (stderr, "[x] setip error: %d.\n", errno);
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;

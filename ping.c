@@ -3,13 +3,21 @@
 #include "ip.h"
 #include "ping.h"
 #include "util.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 
 
 int
-main (void)
+main (int argc, char **argv)
 {
     srand (getpid ());
+
+    if (argc != 2)
+    {
+        fprintf (stderr, "[x] arg error. usage: %s ADDRESS\n", argv[0]);
+        return EXIT_FAILURE;
+    }
 
     const uint8 *msg = (uint8 *)"ohme god damn";
     uint16 msize = strlen ((char *)msg);
@@ -19,7 +27,7 @@ main (void)
     assert (icmp);
 
     char *src = "192.168.31.110";
-    char *dst = "192.168.31.186";
+    char *dst = argv[1];
 
     ipv4_pt *ip
         = mkip (TTL, ICMP, inet_addr (src), inet_addr (dst), icmp, icmpsize);
