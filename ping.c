@@ -5,10 +5,11 @@
 #include "util.h"
 
 
+
 int
 main (void)
 {
-    srand (getpid ());
+    srand (time (0));
 
     const uint8 *msg = (uint8 *)"ohme god damn";
     uint16 msize = strlen ((char *)msg);
@@ -26,7 +27,7 @@ main (void)
     assert (ip);
 
     show (icmp, icmpsize);
-    show (ip, ipsize);
+    show ((void *)ip, ipsize);
 
     int sock = setsocket (AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (sock == ERROR)

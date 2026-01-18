@@ -3,8 +3,6 @@
 #include "icmp.h"
 #include "ping.h"
 #include "util.h"
-#include <netinet/in.h>
-#include <stdlib.h>
 
 #undef RAND_MAX
 #define RAND_MAX 65536
@@ -16,6 +14,7 @@
 
 
 // https://en.wikipedia.org/wiki/IPv4#Packet_structure
+#pragma scalar_storage_order big - endian
 typedef struct
 {
     uint8 vers : 4;
@@ -82,7 +81,7 @@ sendip (uint32 sock, ipv4_pt *pt, const struct sockaddr_in *dst)
         return 0;
     }
 
-    if ((bytes = sendto (sock, pt, pt->totlen, MSG_DONTWAIT,
+    if ((bytes = sendto (sock, (void *)pt, pt->totlen, MSG_DONTWAIT,
                          (struct sockaddr *)dst, sizeof (*dst)))
         == -1)
     {
@@ -131,7 +130,7 @@ mkip (uint16 id, uint8 ttl, uint8 protocol, uint32 src, uint32 dst,
     pt->src = src;
     pt->dst = dst;
     copy (pt->payload, payload, pdsize);
-    pt->checksum = checksum (pt, size);
+    pt->checksum = checksum ((void *)pt, size);
 
     if (!pt->checksum)
     {

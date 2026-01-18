@@ -3,6 +3,12 @@
 #include "ping.h"
 
 
+// uint16
+// chend (uint16 num)
+// {
+// }
+
+
 // https://en.wikipedia.org/wiki/Internet_checksum
 uint16
 checksum (const void *pt, uint16 size)

@@ -12,12 +12,10 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 
 #define packed __attribute__ ((packed))
-// #define big_endian __attribute__ ((scalar_storage_order ("big-endian")))
-// #define lil_endian __attribute__ ((scalar_storage_order ("little-endian")))
-
 
 typedef unsigned char uint8;
 typedef unsigned short uint16;
